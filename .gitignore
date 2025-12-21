@@ -1,0 +1,24 @@
+# C++ build artifacts
+cpp/build/
+cpp/cmake-build-*/
+*.o
+*.so
+*.a
+
+# Rust build artifacts
+rust/target/
+rust/Cargo.lock
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Compiled binaries
+sort_visualizer
+*.exe

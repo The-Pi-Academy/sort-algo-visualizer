@@ -1,0 +1,14 @@
+[package]
+name = "sort_visualizer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+macroquad = "0.4"
+rand = "0.8"
+
+# Optimize for smaller binary size on Raspberry Pi
+[profile.release]
+opt-level = 2
+lto = true
+codegen-units = 1

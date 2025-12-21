@@ -1,80 +1,209 @@
-To build a "Station" for the Pi Academy, you want a setup that is easy to install, performant on the Pi 4b, and visually engaging.
+# Sorting Algorithm Visualizer
 
-For the **educational comparison**, I recommend using **SDL2 for C++** and **Macroquad (or Pixels) for Rust**. Both leverage the Pi's GPU (via OpenGL/ES) and allow you to draw the same "array of bars" visualization easily.
+A visual and interactive sorting algorithm demonstration built for The Pi Academy's Raspberry Pi Youth Coding Camp. This project helps students ages 11-14 learn about sorting algorithms through colorful visualizations and sound, comparing implementations in both C++ and Rust.
 
-### 1. Repository Structure
+## What This Project Does
 
-To keep them side-by-side, use a standard layout where the top level handles common assets (like sounds) and the subdirectories contain the language-specific logic.
+Watch sorting algorithms come to life! Each algorithm is visualized as colorful bars that move and swap in real-time, with sounds that correspond to the values being sorted. Students can:
 
-```text
-pi-academy-sorting/
-├── assets/                 # Shared .wav files for the "pings"
+- See how different sorting algorithms work step-by-step
+- Compare the same algorithm written in C++ and Rust
+- Understand algorithm efficiency through visual speed differences
+- Modify array sizes and speeds to experiment
+
+## Algorithms Included
+
+Starting simple and building up:
+
+1. **Bubble Sort** - "Bubble" large values to the top (easiest to understand)
+2. **Selection Sort** - Find the smallest value and put it in place
+3. **Insertion Sort** - Like sorting playing cards in your hand
+
+Advanced algorithms (to be added):
+4. **Quicksort** - Divide and conquer with recursion
+5. **Merge Sort** - Another divide and conquer approach
+
+## Project Structure
+
+```
+sort-algo-visualizer/
+├── assets/                 # Shared sound files for all visualizations
 ├── cpp/
-│   ├── build/              # CMake build artifacts
-│   ├── src/                # quick.cpp, bubble.cpp, main.cpp
-│   └── CMakeLists.txt      # Links to SDL2
+│   ├── src/                # C++ source files
+│   │   ├── main.cpp        # Main program
+│   │   └── bubble.cpp      # Bubble sort implementation
+│   └── CMakeLists.txt      # Build configuration
 └── rust/
-    ├── src/                # quick.rs, bubble.rs, main.rs
-    └── Cargo.toml          # Includes macroquad or pixels
-
+    ├── src/                # Rust source files
+    │   ├── main.rs         # Main program
+    │   └── bubble.rs       # Bubble sort implementation
+    └── Cargo.toml          # Build configuration
 ```
 
-### 2. The Visual & Audio Component
+## Visual Features
 
-To replicate the "fun" feel of Sort Visualizer:
+- **Bars**: Each element in the array is represented as a vertical bar
+- **Colors**: Rainbow gradient based on value (low values = red/orange, high values = blue/purple)
+- **Highlighting**:
+  - Red bars = currently being compared
+  - Green bars = in their final sorted position
+- **Sound**: Higher values = higher pitch tones for audio feedback
+- **Speed Control**: Adjustable delay to see algorithms in slow motion
 
-* **Visuals:** Represent the array as vertical bars.
-* **Colors:** Use a "Rainbow" gradient (Hue) based on the value, or simple white-to-blue. Highlight bars in **Red** when they are being compared and **Green** when they are in their final sorted position.
+## Getting Started on Raspberry Pi
 
+### Prerequisites
 
-* **Sounds:** For the Pi, use a simple Sine Wave generator or pre-recorded `.wav` "pings." Map the pitch (frequency) to the value of the element being moved. Higher values = higher pitch.
-
-### 3. Recommended Tech Stack for Pi 4b
-
-#### **C++: SDL2 (Simple DirectMedia Layer)**
-
-SDL2 is the industry standard for 2D graphics on Linux/Pi. It’s "close to the metal" enough for a Pi Academy station but high-level enough for students to read.
-
-* **Why:** It works perfectly with the Pi’s Broadcom GPU.
-* **Visualization Logic:** ```cpp
-// Simple bar drawing loop
-for (int i = 0; i < arr_size; i++) {
-SDL_Rect bar = { i * width, SCREEN_HEIGHT - arr[i], width, arr[i] };
-SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-SDL_RenderFillRect(renderer, &bar);
-}
+**For C++ (SDL2):**
+```bash
+sudo apt-get update
+sudo apt-get install libsdl2-dev libsdl2-mixer-dev cmake build-essential
 ```
 
+**For Rust (Macroquad):**
+```bash
+# Install Rust (if not already installed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
 
+# Install ALSA development libraries for audio
+sudo apt-get install libasound2-dev
 ```
 
+### Building and Running
 
+**C++ Version:**
+```bash
+cd cpp
+mkdir build
+cd build
+cmake ..
+make
+./sort_visualizer
+```
 
-#### **Rust: Macroquad**
+**Rust Version:**
+```bash
+cd rust
+cargo run --release
+```
 
-Macroquad is the easiest way to get "game-like" visuals in Rust without the complexity of `wgpu` or `Beavy`.
+## For Students: Experimenting with the Code
 
-* **Why:** It is extremely lightweight and has a very "educational" API. It compiles quickly on the Pi 4.
-* **Visualization Logic:**
+### Changing Array Size
+
+Both versions have a configurable array size at the top of the main file:
+
+**C++** (cpp/src/main.cpp):
+```cpp
+const int ARRAY_SIZE = 100;  // Change this number!
+```
+
+**Rust** (rust/src/main.rs):
 ```rust
-for (i, val) in array.iter().enumerate() {
-    draw_rectangle(i as f32 * w, screen_height() - *val, w, *val, WHITE);
-}
-
+const ARRAY_SIZE: usize = 100;  // Change this number!
 ```
 
+### Changing Speed
 
+Look for the delay/sleep values in the sorting functions:
 
-### 4. Comparison Strategy
+**C++**:
+```cpp
+std::this_thread::sleep_for(std::chrono::milliseconds(10));  // 10ms delay
+```
 
-Since you want students to see the difference:
+**Rust**:
+```rust
+std::thread::sleep(Duration::from_millis(10));  // 10ms delay
+```
 
-1. **Safety vs. Speed:** Show how Rust’s `array[i]` checks bounds automatically vs. C++’s potential for a segmentation fault if they mess up a `quickSort` partition index.
-2. **Syntax:** Have the `bubble_sort` functions open in two windows. Students will notice that the logic is nearly identical, but the *way* they manage the data (references in Rust vs. pointers/indices in C++) is where the lesson lies.
-3. **The "Race":** You can run both programs simultaneously on the Pi 4b desktop (since it’s a quad-core) to literally "race" the algorithms.
+Try values between 1ms (very fast) and 100ms (slow motion)!
 
-### 5. Implementation Tip: "The Step"
+### Adding Your Own Algorithm
 
-To make the visualization work, you cannot just run a `while` loop, or it will finish in a millisecond.
+1. Create a new file (e.g., `selection.cpp` or `selection.rs`)
+2. Copy the structure from `bubble.cpp` or `bubble.rs`
+3. Implement your sorting logic
+4. Update the main file to call your new algorithm
 
-* **The Educational Delay:** Insert a `std::this_thread::sleep_for` (C++) or `thread::sleep` (Rust) of ~10-50ms inside the swap logic of your algorithms. This allows students to actually see the "swapping" and "partitioning" happen in real-time.
+## Educational Goals
+
+This project teaches:
+
+- **Algorithm Basics**: Understanding how sorting works
+- **Complexity**: Why some algorithms are faster than others
+- **Language Comparison**: Seeing similarities and differences between C++ and Rust
+- **Visual Programming**: Connecting code to visual output
+- **Audio Feedback**: Making programs interactive and engaging
+
+## For Instructors
+
+### Quick Development Iteration
+
+The default array size is 100 elements, which provides good visualization without taking too long. You can:
+
+- Run multiple algorithms back-to-back during demos
+- Have students race C++ vs Rust implementations
+- Modify the delay to speed up or slow down for different teaching moments
+
+### Comparison Points: C++ vs Rust
+
+Both implementations are intentionally similar to highlight:
+
+1. **Safety**: Rust's automatic bounds checking vs C++'s manual index management
+2. **Syntax**: Nearly identical loop structures, different memory handling
+3. **Performance**: Both leverage GPU acceleration (SDL2 and Macroquad)
+4. **Build Systems**: CMake vs Cargo
+
+### Running Side-by-Side
+
+The Pi 4b has 4 cores, so you can run both versions simultaneously:
+
+1. Open two terminal windows
+2. Run the C++ version in one, Rust in the other
+3. Students can literally see them "race" on screen
+
+## Technical Details
+
+### C++: SDL2 (Simple DirectMedia Layer)
+
+- Industry-standard 2D graphics library
+- Hardware-accelerated rendering on Pi
+- Direct access to GPU via OpenGL ES
+- Simple, readable API for students
+
+### Rust: Macroquad
+
+- Lightweight game framework
+- Educational-friendly API
+- Quick compilation even on Pi 4
+- Cross-platform (can develop on laptop, run on Pi)
+
+## Troubleshooting
+
+**Display Issues on Pi:**
+- Make sure you're running in desktop mode (not headless)
+- SDL2 requires X11 display server
+
+**Audio Not Working:**
+- Check volume: `alsamixer`
+- Verify audio device: `aplay -l`
+
+**Compilation Errors:**
+- Ensure all dependencies are installed
+- Try updating: `sudo apt-get update && sudo apt-get upgrade`
+
+## Contributing
+
+This is an educational project for The Pi Academy. Suggestions for improvements or additional algorithms are welcome! Please keep in mind the target audience is middle school students (ages 11-14).
+
+## License
+
+Created for The Pi Academy, a 501(c)(3) nonprofit organization empowering underrepresented youth through hands-on technology education.
+
+## About The Pi Academy
+
+The Pi Academy is a nonprofit founded by Bravo LT to empower underrepresented youth through hands-on technology education. Our Raspberry Pi Youth Coding Camps introduce students ages 11-14 to coding, robotics, and electronics, led by professional software developers. Students leave with their own Raspberry Pi computer and the foundation to continue learning independently.
+
+Learn more at [The Pi Academy](https://github.com/The-Pi-Academy)

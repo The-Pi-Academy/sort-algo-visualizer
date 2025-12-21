@@ -1,0 +1,39 @@
+cmake_minimum_required(VERSION 3.10)
+project(SortVisualizer)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# macOS-specific: Use pkg-config to find SDL2 and SDL2_mixer (works with Homebrew)
+find_package(PkgConfig REQUIRED)
+
+# Find SDL2
+pkg_check_modules(SDL2 REQUIRED sdl2)
+
+# Find SDL2_mixer
+pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
+
+# Include directories
+include_directories(
+    ${SDL2_INCLUDE_DIRS}
+    ${SDL2_MIXER_INCLUDE_DIRS}
+)
+
+# Add executable
+add_executable(sort_visualizer
+    src/main.cpp
+)
+
+# Link directories
+link_directories(
+    ${SDL2_LIBRARY_DIRS}
+    ${SDL2_MIXER_LIBRARY_DIRS}
+)
+
+# Link libraries
+target_link_libraries(sort_visualizer
+    ${SDL2_LIBRARIES}
+    ${SDL2_MIXER_LIBRARIES}
+    pthread
+)

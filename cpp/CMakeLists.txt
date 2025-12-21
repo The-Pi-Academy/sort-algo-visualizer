@@ -24,7 +24,7 @@ target_link_libraries(sort_visualizer
     pthread
 )
 
-# For Raspberry Pi, we might need to explicitly link these
+# For Raspberry Pi specific libraries
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
     target_link_libraries(sort_visualizer
         bcm_host

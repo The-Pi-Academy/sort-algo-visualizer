@@ -20,15 +20,15 @@ include_directories(
     ${SDL2_MIXER_INCLUDE_DIRS}
 )
 
-# Add executable
-add_executable(sort_visualizer
-    src/main.cpp
-)
-
-# Link directories
+# Link directories (must come before add_executable)
 link_directories(
     ${SDL2_LIBRARY_DIRS}
     ${SDL2_MIXER_LIBRARY_DIRS}
+)
+
+# Add executable
+add_executable(sort_visualizer
+    src/main.cpp
 )
 
 # Link libraries

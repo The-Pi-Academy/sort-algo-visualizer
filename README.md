@@ -324,6 +324,28 @@ The Pi 4b has 4 cores, so you can run both versions simultaneously:
 - Ensure all dependencies are installed
 - Try updating: `sudo apt-get update && sudo apt-get upgrade`
 
+## Inspiration & Credits
+
+This project was inspired by the excellent work at [SortVisualizer.com](https://sortvisualizer.com/) and various educational sorting algorithm videos on TikTok and other platforms. We wanted to create a similar learning experience optimized for Raspberry Pi hardware and tailored for The Pi Academy's educational mission.
+
+**Important Notes:**
+- This is an independent educational project created for The Pi Academy's Raspberry Pi Youth Coding Camps
+- We are **not affiliated** with SortVisualizer.com in any way
+- This project is **not intended** to compete with or replace SortVisualizer.com
+- Full credit goes to the original creators at SortVisualizer.com for pioneering this engaging approach to teaching algorithms
+- We built this from scratch to provide hands-on coding experience for students learning C++ and Rust
+
+If you're looking for a comprehensive web-based sorting visualizer, please check out the original at [sortvisualizer.com](https://sortvisualizer.com/)!
+
+Our project differs in that it:
+- Runs natively on Raspberry Pi hardware
+- Provides full source code in both C++ and Rust for students to modify
+- Includes audio feedback generated programmatically
+- Focuses on comparing language implementations side-by-side
+- Serves as a hands-on learning project, not just a visualization tool
+
+Thank you to all the content creators who make algorithm education accessible and engaging!
+
 ## Contributing
 
 This is an educational project for The Pi Academy. Suggestions for improvements or additional algorithms are welcome! Please keep in mind the target audience is middle school students (ages 11-14).

@@ -12,7 +12,7 @@ You already have:
 ## Step 1: Install SDL2 for C++ Version
 
 ```bash
-brew install sdl2 sdl2_mixer cmake pkg-config
+brew install sdl2 sdl2_mixer sdl2_ttf cmake pkg-config
 ```
 
 ## Step 2: Install Rust for Rust Version

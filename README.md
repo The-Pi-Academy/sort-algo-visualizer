@@ -27,16 +27,20 @@ Advanced algorithms (to be added):
 
 ```
 sort-algo-visualizer/
-├── assets/                 # Shared sound files for all visualizations
 ├── cpp/
 │   ├── src/                # C++ source files
-│   │   ├── main.cpp        # Main program
-│   │   └── bubble.cpp      # Bubble sort implementation
+│   │   ├── main.cpp        # Main program entry point
+│   │   ├── visualizer.h    # Shared visualization code (graphics, audio)
+│   │   ├── bubble.cpp      # Bubble sort implementation
+│   │   ├── selection.cpp   # Selection sort implementation (planned)
+│   │   └── insertion.cpp   # Insertion sort implementation (planned)
 │   └── CMakeLists.txt      # Build configuration
 └── rust/
     ├── src/                # Rust source files
-    │   ├── main.rs         # Main program
-    │   └── bubble.rs       # Bubble sort implementation
+    │   ├── main.rs         # Main program entry point
+    │   ├── visualizer.rs   # Shared visualization code
+    │   ├── bubble.rs       # Bubble sort implementation
+    │   └── ...             # Other algorithms
     └── Cargo.toml          # Build configuration
 ```
 
@@ -47,7 +51,7 @@ sort-algo-visualizer/
 - **Highlighting**:
   - Red bars = currently being compared
   - Green bars = in their final sorted position
-- **Sound**: Higher values = higher pitch tones for audio feedback
+- **Sound**: Each value has a unique frequency (200Hz-2000Hz) generated programmatically - higher values = higher pitch
 - **Speed Control**: Adjustable delay to see algorithms in slow motion
 
 ## Getting Started on Raspberry Pi
@@ -57,7 +61,7 @@ sort-algo-visualizer/
 **For C++ (SDL2):**
 ```bash
 sudo apt-get update
-sudo apt-get install libsdl2-dev libsdl2-mixer-dev cmake build-essential
+sudo apt-get install libsdl2-dev libsdl2-mixer-dev libsdl2-ttf-dev cmake build-essential
 ```
 
 **For Rust (Macroquad):**
@@ -122,10 +126,26 @@ Try values between 1ms (very fast) and 100ms (slow motion)!
 
 ### Adding Your Own Algorithm
 
+The code is structured to make adding new algorithms easy:
+
+1. **Shared visualization code** (`visualizer.h`) handles all graphics and sound
+2. **Algorithm files** only contain the sorting logic
+3. Each algorithm is clean and focused
+
+**To add a new algorithm:**
 1. Create a new file (e.g., `selection.cpp` or `selection.rs`)
-2. Copy the structure from `bubble.cpp` or `bubble.rs`
-3. Implement your sorting logic
-4. Update the main file to call your new algorithm
+2. Import the visualizer
+3. Write your sorting function that calls `viz.draw()` and `viz.playTone()`
+4. Update `main.cpp` to call your new algorithm
+
+**Example structure:**
+```cpp
+void selectionSort(std::vector<int>& array, Visualizer& viz) {
+    // Your sorting logic here
+    viz.draw(array, compareIdx1, compareIdx2);
+    viz.playTone(array[i]);
+}
+```
 
 ## Educational Goals
 

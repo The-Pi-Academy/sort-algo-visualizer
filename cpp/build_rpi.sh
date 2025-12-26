@@ -13,11 +13,11 @@ echo "========================================="
 if [ "$EUID" -ne 0 ]; then
     echo "Installing dependencies (requires sudo)..."
     sudo apt-get update
-    sudo apt-get install -y cmake build-essential libsdl2-dev libsdl2-mixer-dev
+    sudo apt-get install -y cmake build-essential libsdl2-dev libsdl2-mixer-dev libsdl2-ttf-dev
 else
     echo "Installing dependencies..."
     apt-get update
-    apt-get install -y cmake build-essential libsdl2-dev libsdl2-mixer-dev
+    apt-get install -y cmake build-essential libsdl2-dev libsdl2-mixer-dev libsdl2-ttf-dev
 fi
 
 echo ""

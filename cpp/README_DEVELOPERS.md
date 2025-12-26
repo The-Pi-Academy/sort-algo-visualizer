@@ -7,7 +7,7 @@ This file is for curriculum developers working on macOS. Students and instructor
 ### 1. Install Dependencies
 
 ```bash
-brew install sdl2 sdl2_mixer cmake
+brew install sdl2 sdl2_mixer sdl2_ttf cmake pkg-config
 ```
 
 ### 2. Use the macOS CMakeLists

@@ -14,26 +14,33 @@ pkg_check_modules(SDL2 REQUIRED sdl2)
 # Find SDL2_mixer
 pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
 
+# Find SDL2_ttf
+pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
+
 # Include directories
 include_directories(
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
+    ${SDL2_TTF_INCLUDE_DIRS}
 )
 
 # Link directories (must come before add_executable)
 link_directories(
     ${SDL2_LIBRARY_DIRS}
     ${SDL2_MIXER_LIBRARY_DIRS}
+    ${SDL2_TTF_LIBRARY_DIRS}
 )
 
 # Add executable
 add_executable(sort_visualizer
     src/main.cpp
+    src/bubble_sort.cpp
 )
 
 # Link libraries
 target_link_libraries(sort_visualizer
     ${SDL2_LIBRARIES}
     ${SDL2_MIXER_LIBRARIES}
+    ${SDL2_TTF_LIBRARIES}
     pthread
 )

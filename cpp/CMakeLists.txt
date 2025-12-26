@@ -5,28 +5,42 @@ project(SortVisualizer)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find SDL2 packages
-find_package(SDL2 REQUIRED)
-find_package(SDL2_mixer REQUIRED)
+# macOS-specific: Use pkg-config to find SDL2 and SDL2_mixer (works with Homebrew)
+find_package(PkgConfig REQUIRED)
+
+# Find SDL2
+pkg_check_modules(SDL2 REQUIRED sdl2)
+
+# Find SDL2_mixer
+pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
+
+# Find SDL2_ttf
+pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 
 # Include directories
-include_directories(${SDL2_INCLUDE_DIRS})
+include_directories(
+        ${SDL2_INCLUDE_DIRS}
+        ${SDL2_MIXER_INCLUDE_DIRS}
+        ${SDL2_TTF_INCLUDE_DIRS}
+)
+
+# Link directories (must come before add_executable)
+link_directories(
+        ${SDL2_LIBRARY_DIRS}
+        ${SDL2_MIXER_LIBRARY_DIRS}
+        ${SDL2_TTF_LIBRARY_DIRS}
+)
 
 # Add executable
 add_executable(sort_visualizer
-    src/main.cpp
+        src/main.cpp
+        src/bubble_sort.cpp
 )
 
 # Link libraries
 target_link_libraries(sort_visualizer
-    ${SDL2_LIBRARIES}
-    SDL2_mixer
-    pthread
+        ${SDL2_LIBRARIES}
+        ${SDL2_MIXER_LIBRARIES}
+        ${SDL2_TTF_LIBRARIES}
+        pthread
 )
-
-# For Raspberry Pi specific libraries
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
-    target_link_libraries(sort_visualizer
-        bcm_host
-    )
-endif()

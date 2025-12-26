@@ -13,13 +13,13 @@ Watch sorting algorithms come to life! Each algorithm is visualized as colorful 
 
 ## Algorithms Included
 
-Starting simple and building up:
+Currently implemented in both C++ and Rust:
 
 1. **Bubble Sort** - "Bubble" large values to the top (easiest to understand)
 2. **Selection Sort** - Find the smallest value and put it in place
-3. **Insertion Sort** - Like sorting playing cards in your hand
 
-Advanced algorithms (to be added):
+Coming soon:
+3. **Insertion Sort** - Like sorting playing cards in your hand
 4. **Quicksort** - Divide and conquer with recursion
 5. **Merge Sort** - Another divide and conquer approach
 
@@ -53,6 +53,11 @@ sort-algo-visualizer/
   - Green bars = in their final sorted position
 - **Sound**: Each value has a unique frequency (200Hz-2000Hz) generated programmatically - higher values = higher pitch
 - **Speed Control**: Adjustable delay to see algorithms in slow motion
+- **Window Positioning**:
+  - C++ automatically positions on the left 50% of the screen
+  - Rust automatically positions on the right 50% of the screen (macOS)
+  - Both use the full height of your display for maximum visibility
+- **Statistics**: Both implementations show real-time comparisons, swaps, and timing information
 
 ## Getting Started on Raspberry Pi
 
@@ -76,21 +81,126 @@ sudo apt-get install libasound2-dev
 
 ### Building and Running
 
-**C++ Version:**
+**C++ Version (Left 50% of screen):**
 ```bash
 cd cpp
-mkdir build
-cd build
+mkdir -p cmake-build-debug
+cd cmake-build-debug
 cmake ..
 make
-./sort_visualizer
+./sort_visualizer [algorithm]
 ```
 
-**Rust Version:**
+Available algorithms: `bubble` (default), `selection`
+
+**Rust Version (Right 50% of screen):**
 ```bash
 cd rust
-cargo run --release
+cargo run --release -- [algorithm]
 ```
+
+Available algorithms: `bubble` (default), `selection`
+
+**Side-by-Side Comparison:**
+```bash
+# Run both implementations simultaneously
+./run_comparison.sh <algorithm>
+```
+
+This script will automatically build and launch both C++ and Rust versions at the same time, with C++ on the left half of the screen and Rust on the right half. Perfect for comparing implementations!
+
+## Using the Comparison Script
+
+The `run_comparison.sh` script is the easiest way to run both implementations side-by-side.
+
+### Quick Start
+
+```bash
+# Show available algorithms
+./run_comparison.sh
+
+# Compare bubble sort implementations
+./run_comparison.sh bubble
+
+# Compare selection sort implementations
+./run_comparison.sh selection
+```
+
+### What the Script Does
+
+1. **Validates** your algorithm choice
+2. **Builds** both C++ and Rust projects (always rebuilds to ensure changes are reflected)
+3. **Launches** both visualizers simultaneously
+4. **Positions** windows side-by-side (C++ on left, Rust on right)
+
+### Things to Keep in Mind
+
+**Automatic Building:**
+- The script always rebuilds both projects before running
+- This ensures your code changes are immediately reflected
+- Build systems (Make/Ninja and Cargo) only recompile what changed, so rebuilds are fast
+
+**Visual Comparison:**
+- Both implementations use the same `ARRAY_SIZE` and `DELAY_MS` constants
+- You're comparing algorithm behavior, code structure, and implementation differences
+- The visualizations should look identical if the algorithms are implemented correctly
+
+**Stopping the Programs:**
+- Press `Ctrl+C` to stop both programs
+- Both processes will terminate together
+
+### Performance Benchmarking
+
+**Important:** The comparison script is designed for **visual comparison**, not performance benchmarking. The visualizations are throttled by delays, rendering, and audio playback.
+
+If you want to benchmark pure sorting performance (1:1 comparison):
+
+**Option 1: Disable Visualization Overhead**
+
+Modify both implementations to remove delays:
+```rust
+// In visualizer.rs (Rust) and visualizer.h (C++)
+pub const DELAY_MS: u64 = 0;  // Remove delay between comparisons
+```
+
+And comment out visualization/audio calls in the sorting functions:
+```rust
+// draw_array(...);      // Comment out
+// audio.play_tone(...); // Comment out
+```
+
+**Option 2: Use Larger Datasets**
+
+Increase the array size to make sorting time dominate:
+```rust
+pub const ARRAY_SIZE: usize = 10000;  // Much larger dataset
+```
+
+**Option 3: Dedicated Benchmark Tools**
+
+For rigorous performance testing:
+
+**Rust:**
+```bash
+cd rust
+cargo bench  # Requires adding benchmark configuration
+```
+
+**C++:**
+```bash
+# Use Google Benchmark or similar tools
+# Compile with optimizations: -O3 or -DCMAKE_BUILD_TYPE=Release
+```
+
+**Key factors affecting performance:**
+- Build configuration (Debug vs Release)
+- Compiler optimizations (-O0, -O2, -O3)
+- Graphics library overhead (SDL2 vs Macroquad)
+- Audio system latency
+- Operating system scheduling
+- Background processes
+
+For educational purposes, the visual comparison is perfect! For scientific benchmarking, you'll want to isolate the sorting algorithm from all other factors.
 
 ## For Students: Experimenting with the Code
 

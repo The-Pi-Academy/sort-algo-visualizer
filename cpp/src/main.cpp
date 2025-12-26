@@ -6,14 +6,27 @@
 #include <thread>
 #include <chrono>
 #include <iostream>
+#include <string>
+
+// STUDENTS: Change this to pick which algorithm to use!
+// Options: SortAlgorithm::BUBBLE or SortAlgorithm::SELECTION
+const SortAlgorithm ALGORITHM = SortAlgorithm::BUBBLE;
 
 int main(int argc, char* argv[]) {
     try {
+        // Figure out which algorithm to use
+        // Can be changed above, or pass as command line argument
+        SortAlgorithm algorithm = ALGORITHM;
+        if (argc > 1) {
+            algorithm = stringToAlgorithm(argv[1]);
+        }
+
         std::cout << "\n";
         std::cout << "╔════════════════════════════════════════╗\n";
-        std::cout << "║   BUBBLE SORT VISUALIZER - C++ SDL2    ║\n";
+        std::cout << "║   SORTING VISUALIZER - C++ SDL2        ║\n";
         std::cout << "╚════════════════════════════════════════╝\n";
-        std::cout << "\nInitializing...\n";
+        std::cout << "\nAlgorithm: " << algorithmToString(algorithm) << "\n";
+        std::cout << "Initializing...\n";
 
         // Create and shuffle array
         std::vector<int> array(ARRAY_SIZE);
@@ -28,8 +41,12 @@ int main(int argc, char* argv[]) {
         std::cout << "Created array with " << ARRAY_SIZE << " elements\n";
         std::cout << "Array shuffled randomly\n";
 
-        // Create visualizer
-        Visualizer viz;
+        // Create visualizer with algorithm info
+        Visualizer viz(
+            algorithmToString(algorithm),
+            getTimeComplexity(algorithm),
+            getSpaceComplexity(algorithm)
+        );
         std::cout << "Window created successfully\n";
         std::cout << "Press ESC to quit anytime\n";
 
@@ -37,8 +54,19 @@ int main(int argc, char* argv[]) {
         viz.draw(array);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-        // Sort and visualize
-        bubbleSort(array, viz);
+        // Sort and visualize - pick the right algorithm
+        switch (algorithm) {
+            case SortAlgorithm::BUBBLE:
+                bubbleSort(array, viz);
+                break;
+            case SortAlgorithm::SELECTION:
+                selectionSort(array, viz);
+                break;
+            // case SortAlgorithm::INSERTION:
+            //     insertionSort(array, viz);
+            //     break;
+            // Add more algorithms here as they're implemented!
+        }
 
         // Wait a bit before closing
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));

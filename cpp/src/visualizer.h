@@ -61,6 +61,9 @@ private:
     int barWidth;
     int windowWidth;
     int windowHeight;
+    std::string algorithmName;
+    std::string timeComplexity;
+    std::string spaceComplexity;
 
     // Generate a sine wave tone at a specific frequency
     Mix_Chunk* generateTone(float frequency, int durationMs) {
@@ -106,7 +109,11 @@ private:
     }
 
 public:
-    Visualizer() : window(nullptr), renderer(nullptr), font(nullptr) {
+    Visualizer(const std::string& algoName = "Sorting",
+               const std::string& timeComp = "O(n^2)",
+               const std::string& spaceComp = "O(1)")
+        : window(nullptr), renderer(nullptr), font(nullptr),
+          algorithmName(algoName), timeComplexity(timeComp), spaceComplexity(spaceComp) {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
             throw std::runtime_error("SDL initialization failed");
         }
@@ -145,8 +152,11 @@ public:
         windowWidth = displayBounds.w / 2;
         windowHeight = displayBounds.h;
 
+        // Create window title with algorithm name (using stored member variable)
+        std::string windowTitle = this->algorithmName + " - C++ with SDL2";
+
         window = SDL_CreateWindow(
-            "Bubble Sort - C++ with SDL2",
+            windowTitle.c_str(),
             0,  // Left edge of screen
             0,  // Top edge of screen
             windowWidth,
@@ -239,20 +249,24 @@ public:
         std::stringstream ss;
 
         ss.str("");
-        ss << "Array Size: " << ARRAY_SIZE;
+        ss << "Algorithm: " << algorithmName;
         renderText(ss.str(), 10, 10, textColor);
 
         ss.str("");
-        ss << "Window: " << windowWidth << "x" << windowHeight;
+        ss << "Time Complexity: " << timeComplexity;
         renderText(ss.str(), 10, 35, textColor);
 
         ss.str("");
-        ss << "Delay: " << DELAY_MS << "ms";
+        ss << "Space Complexity: " << spaceComplexity;
         renderText(ss.str(), 10, 60, textColor);
 
         ss.str("");
-        ss << "Algorithm: Bubble Sort (O(n^2))";
+        ss << "Array Size: " << ARRAY_SIZE;
         renderText(ss.str(), 10, 85, textColor);
+
+        ss.str("");
+        ss << "Delay: " << DELAY_MS << "ms";
+        renderText(ss.str(), 10, 110, textColor);
 
         SDL_RenderPresent(renderer);
     }

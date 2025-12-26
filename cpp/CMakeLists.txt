@@ -35,6 +35,7 @@ link_directories(
 add_executable(sort_visualizer
         src/main.cpp
         src/bubble_sort.cpp
+        src/selection_sort.cpp
 )
 
 # Link libraries

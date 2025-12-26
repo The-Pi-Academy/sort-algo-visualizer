@@ -17,6 +17,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 add_executable(sort_visualizer
     src/main.cpp
     src/bubble_sort.cpp
+    src/selection_sort.cpp
 )
 
 # Link libraries

@@ -154,8 +154,7 @@ case "$MODE" in
         fi
 
         echo -e "${BLUE}→ Building C++ project...${NC}"
-        (cd cpp && ./run-rpi.sh "$ALGORITHM" --no-build > /dev/null 2>&1 || ./run-rpi.sh --no-build > /dev/null 2>&1 || true)
-        (cd cpp && mkdir -p cmake-build-debug && cd cmake-build-debug && cmake .. && cmake --build .) || {
+        (cd cpp && mkdir -p cmake-build-debug && cd cmake-build-debug && cmake .. > /dev/null && cmake --build . 2>&1 | grep -E '(Building|error|warning|\[)' || true) || {
             echo -e "${RED}Error: C++ build failed${NC}"
             exit 1
         }
@@ -182,7 +181,7 @@ case "$MODE" in
             exit 1
         fi
 
-        (cd rust && $CARGO_CMD build --release) || {
+        (cd rust && $CARGO_CMD build --release 2>&1 | grep -E '(Compiling|Finished|error|warning)' || true) || {
             echo -e "${RED}Error: Rust build failed${NC}"
             exit 1
         }

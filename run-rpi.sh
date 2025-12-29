@@ -206,25 +206,71 @@ case "$MODE" in
         echo -e "${GREEN}Both builds successful!${NC}"
         echo ""
 
-        # Run both implementations
+        # Setup signal handler to kill both processes on Ctrl+C
+        cleanup() {
+            echo ""
+            echo -e "${YELLOW}Stopping both visualizers...${NC}"
+
+            # Kill C++ process
+            if [ ! -z "$CPP_PID" ] && kill -0 $CPP_PID 2>/dev/null; then
+                kill -TERM $CPP_PID 2>/dev/null || true
+                sleep 0.5
+                # Force kill if still running
+                if kill -0 $CPP_PID 2>/dev/null; then
+                    kill -KILL $CPP_PID 2>/dev/null || true
+                fi
+            fi
+
+            # Kill Rust process
+            if [ ! -z "$RUST_PID" ] && kill -0 $RUST_PID 2>/dev/null; then
+                kill -TERM $RUST_PID 2>/dev/null || true
+                sleep 0.5
+                # Force kill if still running
+                if kill -0 $RUST_PID 2>/dev/null; then
+                    kill -KILL $RUST_PID 2>/dev/null || true
+                fi
+            fi
+
+            echo -e "${GREEN}Both visualizers stopped${NC}"
+            exit 0
+        }
+
+        trap cleanup SIGINT SIGTERM EXIT
+
+        # Run both implementations in parallel
         echo -e "${BLUE}Starting C++ implementation (left side)...${NC}"
-        $CPP_BIN $ALGORITHM &
+        $CPP_BIN $ALGORITHM > /dev/null 2>&1 &
         CPP_PID=$!
 
-        # Wait a moment for the C++ window to appear
-        sleep 1
+        # Small delay to let C++ window initialize
+        sleep 0.5
 
         echo -e "${BLUE}Starting Rust implementation (right side)...${NC}"
-        $RUST_BIN $ALGORITHM &
+        $RUST_BIN $ALGORITHM > /dev/null 2>&1 &
         RUST_PID=$!
 
+        # Verify both processes started
+        sleep 0.5
+        if ! kill -0 $CPP_PID 2>/dev/null; then
+            echo -e "${RED}Error: C++ process failed to start${NC}"
+            cleanup
+            exit 1
+        fi
+
+        if ! kill -0 $RUST_PID 2>/dev/null; then
+            echo -e "${RED}Error: Rust process failed to start${NC}"
+            cleanup
+            exit 1
+        fi
+
         echo ""
-        echo -e "${GREEN}Both visualizers are running!${NC}"
+        echo -e "${GREEN}Both visualizers are running in parallel!${NC}"
         echo "Press Ctrl+C to stop both programs"
         echo ""
         echo "Process IDs:"
-        echo "  C++:  $CPP_PID"
-        echo "  Rust: $RUST_PID"
+        echo "  C++:  $CPP_PID (running)"
+        echo "  Rust: $RUST_PID (running)"
+        echo ""
 
         # Wait for both processes
         wait $CPP_PID $RUST_PID

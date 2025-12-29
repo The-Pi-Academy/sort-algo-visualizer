@@ -89,170 +89,41 @@ update_package_lists() {
 }
 
 ################################################################################
-# Install C++ dependencies (SDL2, CMake, build tools)
+# Install C++ dependencies (delegates to cpp/install-rpi.sh)
 ################################################################################
 
 install_cpp_dependencies() {
     log_info "Installing C++ dependencies..."
 
-    # List of required packages
-    CPP_PACKAGES=(
-        "build-essential"
-        "cmake"
-        "libsdl2-dev"
-        "libsdl2-mixer-dev"
-        "libsdl2-ttf-dev"
-    )
-
-    # Check which packages are already installed
-    PACKAGES_TO_INSTALL=()
-    for pkg in "${CPP_PACKAGES[@]}"; do
-        if dpkg -l | grep -q "^ii  $pkg "; then
-            log_info "  ✓ $pkg already installed"
-        else
-            PACKAGES_TO_INSTALL+=("$pkg")
-        fi
-    done
-
-    # Install missing packages
-    if [ ${#PACKAGES_TO_INSTALL[@]} -eq 0 ]; then
-        log_success "All C++ dependencies already installed"
+    if [[ -f "cpp/install-rpi.sh" ]]; then
+        source cpp/install-rpi.sh
     else
-        log_info "Installing: ${PACKAGES_TO_INSTALL[*]}"
-        sudo apt-get install -y "${PACKAGES_TO_INSTALL[@]}"
-        log_success "C++ dependencies installed"
+        log_error "cpp/install-rpi.sh not found"
+        exit 1
     fi
-
-    # Verify CMake version
-    CMAKE_VERSION=$(cmake --version | head -n1 | awk '{print $3}')
-    log_info "CMake version: $CMAKE_VERSION"
 }
 
 ################################################################################
-# Install Rust and its dependencies
+# Install Rust and its dependencies (delegates to rust/install-rpi.sh)
 ################################################################################
 
 install_rust_dependencies() {
     log_info "Installing Rust dependencies..."
 
-    # Check if Rust is already installed
-    if command -v rustc &> /dev/null; then
-        RUST_VERSION=$(rustc --version)
-        log_info "  ✓ Rust already installed: $RUST_VERSION"
-
-        # Update Rust to latest stable
-        log_info "Updating Rust to latest stable version..."
-        rustup update stable
-        log_success "Rust updated"
+    if [[ -f "rust/install-rpi.sh" ]]; then
+        source rust/install-rpi.sh
     else
-        log_info "Installing Rust via rustup..."
-
-        # Install Rust using rustup (non-interactive)
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
-
-        # Source cargo environment
-        source "$HOME/.cargo/env"
-
-        RUST_VERSION=$(rustc --version)
-        log_success "Rust installed: $RUST_VERSION"
+        log_error "rust/install-rpi.sh not found"
+        exit 1
     fi
-
-    # Ensure cargo is in PATH for current session
-    if ! command -v cargo &> /dev/null; then
-        if [[ -f "$HOME/.cargo/env" ]]; then
-            source "$HOME/.cargo/env"
-        fi
-    fi
-
-    # Install ALSA development libraries (required for rodio audio)
-    if dpkg -l | grep -q "^ii  libasound2-dev "; then
-        log_info "  ✓ libasound2-dev already installed"
-    else
-        log_info "Installing ALSA development libraries..."
-        sudo apt-get install -y libasound2-dev
-        log_success "ALSA development libraries installed"
-    fi
-
-    # Verify cargo
-    CARGO_VERSION=$(cargo --version)
-    log_info "Cargo version: $CARGO_VERSION"
 }
 
 ################################################################################
-# Verify installations
+# Verify installations (verification done by delegated scripts)
 ################################################################################
 
 verify_installations() {
-    log_info "Verifying installations..."
-
-    VERIFICATION_FAILED=0
-
-    # Check C++ tools
-    if command -v g++ &> /dev/null; then
-        log_info "  ✓ g++ $(g++ --version | head -n1 | awk '{print $NF}')"
-    else
-        log_error "  ✗ g++ not found"
-        VERIFICATION_FAILED=1
-    fi
-
-    if command -v cmake &> /dev/null; then
-        log_info "  ✓ cmake $(cmake --version | head -n1 | awk '{print $3}')"
-    else
-        log_error "  ✗ cmake not found"
-        VERIFICATION_FAILED=1
-    fi
-
-    # Check SDL2 libraries
-    if pkg-config --exists sdl2; then
-        log_info "  ✓ SDL2 $(pkg-config --modversion sdl2)"
-    else
-        log_error "  ✗ SDL2 not found"
-        VERIFICATION_FAILED=1
-    fi
-
-    if pkg-config --exists SDL2_mixer; then
-        log_info "  ✓ SDL2_mixer $(pkg-config --modversion SDL2_mixer)"
-    else
-        log_error "  ✗ SDL2_mixer not found"
-        VERIFICATION_FAILED=1
-    fi
-
-    if pkg-config --exists SDL2_ttf; then
-        log_info "  ✓ SDL2_ttf $(pkg-config --modversion SDL2_ttf)"
-    else
-        log_error "  ✗ SDL2_ttf not found"
-        VERIFICATION_FAILED=1
-    fi
-
-    # Check Rust tools
-    if command -v rustc &> /dev/null; then
-        log_info "  ✓ rustc $(rustc --version | awk '{print $2}')"
-    else
-        log_error "  ✗ rustc not found"
-        VERIFICATION_FAILED=1
-    fi
-
-    if command -v cargo &> /dev/null; then
-        log_info "  ✓ cargo $(cargo --version | awk '{print $2}')"
-    else
-        log_error "  ✗ cargo not found"
-        VERIFICATION_FAILED=1
-    fi
-
-    # Check ALSA
-    if pkg-config --exists alsa; then
-        log_info "  ✓ ALSA $(pkg-config --modversion alsa)"
-    else
-        log_error "  ✗ ALSA development libraries not found"
-        VERIFICATION_FAILED=1
-    fi
-
-    if [ $VERIFICATION_FAILED -eq 1 ]; then
-        log_error "Some dependencies are missing. Please review the errors above."
-        exit 1
-    fi
-
-    log_success "All dependencies verified successfully"
+    log_success "All dependencies installed and verified"
 }
 
 ################################################################################
@@ -270,18 +141,18 @@ show_next_steps() {
     echo "1. Source Rust environment (for current session):"
     echo "   ${GREEN}source \$HOME/.cargo/env${NC}"
     echo
-    echo "2. Build the C++ version:"
-    echo "   ${GREEN}cd cpp${NC}"
-    echo "   ${GREEN}mkdir -p cmake-build-debug && cd cmake-build-debug${NC}"
-    echo "   ${GREEN}cmake .. && make${NC}"
-    echo "   ${GREEN}./sort_visualizer bubble${NC}"
+    echo "2. Run C++ version only:"
+    echo "   ${GREEN}cd cpp && ./run-rpi.sh bubble${NC}"
     echo
-    echo "3. Build and run the Rust version:"
-    echo "   ${GREEN}cd rust${NC}"
-    echo "   ${GREEN}cargo run --release -- bubble${NC}"
+    echo "3. Run Rust version only:"
+    echo "   ${GREEN}cd rust && ./run-rpi.sh bubble${NC}"
     echo
-    echo "4. Run side-by-side comparison:"
-    echo "   ${GREEN}./run_comparison.sh bubble${NC}"
+    echo "4. Run side-by-side comparison (both C++ and Rust):"
+    echo "   ${GREEN}./run-rpi.sh bubble${NC}"
+    echo
+    echo "5. Run only C++ or only Rust from top level:"
+    echo "   ${GREEN}./run-rpi.sh --cpp bubble${NC}"
+    echo "   ${GREEN}./run-rpi.sh --rust bubble${NC}"
     echo
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo

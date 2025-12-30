@@ -52,7 +52,7 @@ void bubbleSort(std::vector<int>& array, Visualizer& viz) {
             }
 
             // Delay so we can see the visualization
-            std::this_thread::sleep_for(std::chrono::milliseconds(DELAY_MS));
+            std::this_thread::sleep_for(std::chrono::milliseconds(viz.getDelayMs()));
         }
 
         // Mark the last element of this pass as sorted

@@ -28,15 +28,46 @@ log_error() {
 }
 
 ################################################################################
+# Help text
+################################################################################
+
+show_help() {
+    echo "Usage: $0 [algorithm] [options]"
+    echo ""
+    echo "Available algorithms:"
+    echo "  bubble      Bubble Sort (O(n²))"
+    echo "  selection   Selection Sort (O(n²))"
+    echo ""
+    echo "Options:"
+    echo "  --size N      Array size (1-10000, default: 100)"
+    echo "  --delay MS    Delay in milliseconds (0-1000, default: 10)"
+    echo "  --no-build    Skip building, run existing binary"
+    echo "  --debug       Build in debug mode (default: release)"
+    echo "  --help, -h    Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 bubble                        # Build and run bubble sort"
+    echo "  $0 selection --size 500          # 500 elements"
+    echo "  $0 bubble --debug --delay 5      # Debug build, 5ms delay"
+    echo "  $0 selection --no-build          # Skip build"
+    echo ""
+}
+
+################################################################################
 # Parse arguments
 ################################################################################
 
 ALGORITHM="bubble"
 NO_BUILD=false
 BUILD_MODE="release"
+EXTRA_ARGS=()
 
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
         --no-build)
             NO_BUILD=true
             shift
@@ -49,10 +80,22 @@ while [[ $# -gt 0 ]]; do
             ALGORITHM=$1
             shift
             ;;
+        --size=*|--delay=*)
+            EXTRA_ARGS+=("$1")
+            shift
+            ;;
+        --size|--delay)
+            EXTRA_ARGS+=("$1")
+            if [[ $# -gt 1 ]]; then
+                EXTRA_ARGS+=("$2")
+                shift
+            fi
+            shift
+            ;;
         *)
             log_error "Unknown argument: $1"
-            echo "Usage: $0 [algorithm] [--no-build] [--debug]"
-            echo "Available algorithms: bubble, selection"
+            echo ""
+            show_help
             exit 1
             ;;
     esac
@@ -127,8 +170,8 @@ run_visualizer() {
         exit 1
     fi
 
-    # Run the visualizer
-    "$BIN_PATH" "$ALGORITHM"
+    # Run the visualizer with algorithm and any extra arguments
+    "$BIN_PATH" "$ALGORITHM" "${EXTRA_ARGS[@]}"
 }
 
 ################################################################################

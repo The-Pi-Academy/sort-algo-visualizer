@@ -3,7 +3,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use crate::algorithms::SortAlgorithm;
-use crate::visualizer::{AudioSystem, draw_array, DELAY_MS};
+use crate::visualizer::{AudioSystem, draw_array};
 
 // Bubble Sort with visualization
 // Time Complexity: O(n^2) - quadratic
@@ -13,7 +13,7 @@ use crate::visualizer::{AudioSystem, draw_array, DELAY_MS};
 // 1. Compare adjacent elements
 // 2. Swap if they're in wrong order
 // 3. Repeat until no more swaps needed
-pub async fn bubble_sort(array: &mut [usize], algorithm: SortAlgorithm, audio: &AudioSystem) {
+pub async fn bubble_sort(array: &mut [usize], algorithm: SortAlgorithm, audio: &AudioSystem, array_size: usize, delay_ms: u64) {
     let n = array.len();
     let mut sorted = vec![false; n];
     let mut total_comparisons = 0;
@@ -40,11 +40,11 @@ pub async fn bubble_sort(array: &mut [usize], algorithm: SortAlgorithm, audio: &
             pass_comparisons += 1;
 
             // Visualize comparison
-            draw_array(array, Some(j), Some(j + 1), &sorted, algorithm);
+            draw_array(array, Some(j), Some(j + 1), &sorted, algorithm, array_size, delay_ms);
             next_frame().await;
 
             // Play tone for current element
-            audio.play_tone(array[j]);
+            audio.play_tone(array[j], array_size);
 
             // The actual bubble sort logic
             if array[j] > array[j + 1] {
@@ -55,7 +55,7 @@ pub async fn bubble_sort(array: &mut [usize], algorithm: SortAlgorithm, audio: &
             }
 
             // Delay so we can see the visualization
-            thread::sleep(Duration::from_millis(DELAY_MS));
+            thread::sleep(Duration::from_millis(delay_ms));
         }
 
         // Mark the last element of this pass as sorted
@@ -87,7 +87,7 @@ pub async fn bubble_sort(array: &mut [usize], algorithm: SortAlgorithm, audio: &
     println!("========================================");
 
     // Final visualization showing all bars in green
-    draw_array(array, None, None, &sorted, algorithm);
+    draw_array(array, None, None, &sorted, algorithm, array_size, delay_ms);
     next_frame().await;
     thread::sleep(Duration::from_millis(1000));
 }

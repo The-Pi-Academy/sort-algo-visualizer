@@ -24,15 +24,53 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 ################################################################################
+# Help text
+################################################################################
+
+show_help() {
+    echo "╔════════════════════════════════════════╗"
+    echo "║  SORTING VISUALIZER RUNNER (RPi)       ║"
+    echo "╚════════════════════════════════════════╝"
+    echo ""
+    echo "Usage:"
+    echo "  $0 <algorithm> [options]              # Run both (default)"
+    echo "  $0 --both <algorithm> [options]       # Run both explicitly"
+    echo "  $0 --cpp <algorithm> [options]        # Run C++ only"
+    echo "  $0 --rust <algorithm> [options]       # Run Rust only"
+    echo ""
+    echo "Available algorithms:"
+    echo "  - bubble      Bubble Sort (O(n²))"
+    echo "  - selection   Selection Sort (O(n²))"
+    echo ""
+    echo "Options:"
+    echo "  --size N      Array size (1-10000, default: 100)"
+    echo "  --delay MS    Delay in milliseconds (0-1000, default: 10)"
+    echo "  --help, -h    Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 bubble                           # Run both with defaults"
+    echo "  $0 bubble --size 500 --delay 5      # Custom size and delay"
+    echo "  $0 --cpp selection --size 1000      # C++ only, 1000 elements"
+    echo "  $0 --rust bubble --delay 1          # Rust only, 1ms delay"
+    echo ""
+}
+
+################################################################################
 # Parse arguments
 ################################################################################
 
 MODE="both"  # Default to running both
 ALGORITHM=""
+ARRAY_SIZE=""
+DELAY_MS=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
         --cpp)
             MODE="cpp"
             shift
@@ -49,26 +87,26 @@ while [[ $# -gt 0 ]]; do
             ALGORITHM=$1
             shift
             ;;
+        --size=*)
+            ARRAY_SIZE="${1#*=}"
+            shift
+            ;;
+        --size)
+            ARRAY_SIZE="$2"
+            shift 2
+            ;;
+        --delay=*)
+            DELAY_MS="${1#*=}"
+            shift
+            ;;
+        --delay)
+            DELAY_MS="$2"
+            shift 2
+            ;;
         *)
-            echo "╔════════════════════════════════════════╗"
-            echo "║  SORTING VISUALIZER RUNNER (RPi)       ║"
-            echo "╚════════════════════════════════════════╝"
+            echo -e "${RED}Error: Unknown argument '$1'${NC}"
             echo ""
-            echo "Usage:"
-            echo "  $0 <algorithm>              # Run both (default)"
-            echo "  $0 --both <algorithm>       # Run both explicitly"
-            echo "  $0 --cpp <algorithm>        # Run C++ only"
-            echo "  $0 --rust <algorithm>       # Run Rust only"
-            echo ""
-            echo "Available algorithms:"
-            echo "  - bubble      Bubble Sort (O(n²))"
-            echo "  - selection   Selection Sort (O(n²))"
-            echo ""
-            echo "Examples:"
-            echo "  $0 bubble                  # Run both C++ and Rust"
-            echo "  $0 --cpp selection         # Run C++ only"
-            echo "  $0 --rust bubble           # Run Rust only"
-            echo ""
+            show_help
             exit 1
             ;;
     esac
@@ -78,9 +116,7 @@ done
 if [ -z "$ALGORITHM" ]; then
     echo -e "${RED}Error: No algorithm specified${NC}"
     echo ""
-    echo "Usage: $0 [--cpp|--rust|--both] <algorithm>"
-    echo "Available algorithms: bubble, selection"
-    echo ""
+    show_help
     exit 1
 fi
 
@@ -92,10 +128,7 @@ case "$ALGORITHM" in
     *)
         echo -e "${RED}Error: Unknown algorithm '$ALGORITHM'${NC}"
         echo ""
-        echo "Available algorithms:"
-        echo "  - bubble"
-        echo "  - selection"
-        echo ""
+        show_help
         exit 1
         ;;
 esac
@@ -121,8 +154,13 @@ case "$MODE" in
             exit 1
         fi
 
+        # Build argument list
+        ARGS=("$ALGORITHM")
+        [ -n "$ARRAY_SIZE" ] && ARGS+=("--size" "$ARRAY_SIZE")
+        [ -n "$DELAY_MS" ] && ARGS+=("--delay" "$DELAY_MS")
+
         cd cpp
-        ./run-rpi.sh "$ALGORITHM"
+        ./run-rpi.sh "${ARGS[@]}"
         ;;
 
     rust)
@@ -135,8 +173,13 @@ case "$MODE" in
             exit 1
         fi
 
+        # Build argument list
+        ARGS=("$ALGORITHM")
+        [ -n "$ARRAY_SIZE" ] && ARGS+=("--size" "$ARRAY_SIZE")
+        [ -n "$DELAY_MS" ] && ARGS+=("--delay" "$DELAY_MS")
+
         cd rust
-        ./run-rpi.sh "$ALGORITHM"
+        ./run-rpi.sh "${ARGS[@]}"
         ;;
 
     both)
@@ -236,16 +279,21 @@ case "$MODE" in
 
         trap cleanup SIGINT SIGTERM EXIT
 
+        # Build argument list for binaries
+        BIN_ARGS=("$ALGORITHM")
+        [ -n "$ARRAY_SIZE" ] && BIN_ARGS+=("--size" "$ARRAY_SIZE")
+        [ -n "$DELAY_MS" ] && BIN_ARGS+=("--delay" "$DELAY_MS")
+
         # Run both implementations in parallel
         echo -e "${BLUE}Starting C++ implementation (left side)...${NC}"
-        $CPP_BIN $ALGORITHM > /dev/null 2>&1 &
+        $CPP_BIN "${BIN_ARGS[@]}" > /dev/null 2>&1 &
         CPP_PID=$!
 
         # Small delay to let C++ window initialize
         sleep 0.5
 
         echo -e "${BLUE}Starting Rust implementation (right side)...${NC}"
-        $RUST_BIN $ALGORITHM > /dev/null 2>&1 &
+        $RUST_BIN "${BIN_ARGS[@]}" > /dev/null 2>&1 &
         RUST_PID=$!
 
         # Verify both processes started

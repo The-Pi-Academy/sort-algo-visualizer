@@ -74,16 +74,16 @@ pub struct AudioSystem {
 }
 
 impl AudioSystem {
-    pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(array_size: usize) -> Result<Self, Box<dyn std::error::Error>> {
         let (stream, stream_handle) = OutputStream::try_default()?;
         let sink = Arc::new(Sink::try_new(&stream_handle)?);
 
-        println!("Generating {} tones...", ARRAY_SIZE);
+        println!("Generating {} tones...", array_size);
 
         let mut tones = Vec::new();
-        for i in 0..ARRAY_SIZE {
+        for i in 0..array_size {
             // Map array index to frequency
-            let freq = MIN_FREQUENCY + ((i as f32 / ARRAY_SIZE as f32) * (MAX_FREQUENCY - MIN_FREQUENCY));
+            let freq = MIN_FREQUENCY + ((i as f32 / array_size as f32) * (MAX_FREQUENCY - MIN_FREQUENCY));
             let tone = generate_tone(freq, TONE_DURATION_MS);
             tones.push(tone);
         }
@@ -98,8 +98,8 @@ impl AudioSystem {
     }
 
     // Play a tone based on value (higher value = higher pitch)
-    pub fn play_tone(&self, value: usize) {
-        if value == 0 || value > ARRAY_SIZE {
+    pub fn play_tone(&self, value: usize, array_size: usize) {
+        if value == 0 || value > array_size {
             return;
         }
 
@@ -129,17 +129,19 @@ pub fn draw_array(
     compare_idx2: Option<usize>,
     sorted: &[bool],
     algorithm: SortAlgorithm,
+    array_size: usize,
+    delay_ms: u64,
 ) {
     // Clear screen with dark background
     clear_background(Color::new(0.08, 0.08, 0.12, 1.0));
 
     let window_width = screen_width();
     let window_height = screen_height();
-    let bar_width = window_width / ARRAY_SIZE as f32;
+    let bar_width = window_width / array_size as f32;
 
     // Draw each bar
     for (i, &value) in array.iter().enumerate() {
-        let bar_height = (value as f32 * window_height) / ARRAY_SIZE as f32;
+        let bar_height = (value as f32 * window_height) / array_size as f32;
         let x = i as f32 * bar_width;
         let y = window_height - bar_height;
 
@@ -151,7 +153,7 @@ pub fn draw_array(
             Color::new(1.0, 0.2, 0.2, 1.0)
         } else {
             // Rainbow colors based on value
-            get_bar_color(value, ARRAY_SIZE)
+            get_bar_color(value, array_size)
         };
 
         draw_rectangle(x, y, bar_width - 1.0, bar_height, color);
@@ -184,14 +186,14 @@ pub fn draw_array(
         text_color,
     );
     draw_text(
-        &format!("Array Size: {}", ARRAY_SIZE),
+        &format!("Array Size: {}", array_size),
         10.0,
         y_offset + 75.0,
         font_size,
         text_color,
     );
     draw_text(
-        &format!("Delay: {}ms", DELAY_MS),
+        &format!("Delay: {}ms", delay_ms),
         10.0,
         y_offset + 100.0,
         font_size,

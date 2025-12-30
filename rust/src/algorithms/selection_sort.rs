@@ -3,7 +3,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use crate::algorithms::SortAlgorithm;
-use crate::visualizer::{AudioSystem, draw_array, DELAY_MS};
+use crate::visualizer::{AudioSystem, draw_array};
 
 // Selection Sort with visualization
 // Time Complexity: O(n^2) - quadratic
@@ -13,7 +13,7 @@ use crate::visualizer::{AudioSystem, draw_array, DELAY_MS};
 // 1. Find the smallest element in the unsorted part
 // 2. Swap it with the first unsorted element
 // 3. Move the boundary between sorted and unsorted
-pub async fn selection_sort(array: &mut [usize], algorithm: SortAlgorithm, audio: &AudioSystem) {
+pub async fn selection_sort(array: &mut [usize], algorithm: SortAlgorithm, audio: &AudioSystem, array_size: usize, delay_ms: u64) {
     let n = array.len();
     let mut sorted = vec![false; n];
     let mut total_comparisons = 0;
@@ -40,18 +40,18 @@ pub async fn selection_sort(array: &mut [usize], algorithm: SortAlgorithm, audio
             pass_comparisons += 1;
 
             // Visualize comparison
-            draw_array(array, Some(min_index), Some(j), &sorted, algorithm);
+            draw_array(array, Some(min_index), Some(j), &sorted, algorithm, array_size, delay_ms);
             next_frame().await;
 
             // Play tone for current element being checked
-            audio.play_tone(array[j]);
+            audio.play_tone(array[j], array_size);
 
             if array[j] < array[min_index] {
                 min_index = j;
             }
 
             // Delay so we can see the visualization
-            thread::sleep(Duration::from_millis(DELAY_MS));
+            thread::sleep(Duration::from_millis(delay_ms));
         }
 
         // Swap the found minimum element with the first element
@@ -67,9 +67,9 @@ pub async fn selection_sort(array: &mut [usize], algorithm: SortAlgorithm, audio
         sorted[i] = true;
 
         // Show the swap
-        draw_array(array, Some(i), Some(min_index), &sorted, algorithm);
+        draw_array(array, Some(i), Some(min_index), &sorted, algorithm, array_size, delay_ms);
         next_frame().await;
-        thread::sleep(Duration::from_millis(DELAY_MS * 3));
+        thread::sleep(Duration::from_millis(delay_ms * 3));
     }
 
     // Mark last element as sorted
@@ -88,7 +88,7 @@ pub async fn selection_sort(array: &mut [usize], algorithm: SortAlgorithm, audio
     println!("========================================");
 
     // Final visualization showing all bars in green
-    draw_array(array, None, None, &sorted, algorithm);
+    draw_array(array, None, None, &sorted, algorithm, array_size, delay_ms);
     next_frame().await;
     thread::sleep(Duration::from_millis(1000));
 }

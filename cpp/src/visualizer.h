@@ -64,6 +64,8 @@ private:
     std::string algorithmName;
     std::string timeComplexity;
     std::string spaceComplexity;
+    int arraySize;
+    int delayMs;
 
     // Generate a sine wave tone at a specific frequency
     Mix_Chunk* generateTone(float frequency, int durationMs) {
@@ -111,9 +113,12 @@ private:
 public:
     Visualizer(const std::string& algoName = "Sorting",
                const std::string& timeComp = "O(n^2)",
-               const std::string& spaceComp = "O(1)")
+               const std::string& spaceComp = "O(1)",
+               int size = ARRAY_SIZE,
+               int delay = DELAY_MS)
         : window(nullptr), renderer(nullptr), font(nullptr),
-          algorithmName(algoName), timeComplexity(timeComp), spaceComplexity(spaceComp) {
+          algorithmName(algoName), timeComplexity(timeComp), spaceComplexity(spaceComp),
+          arraySize(size), delayMs(delay) {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
             throw std::runtime_error("SDL initialization failed");
         }
@@ -128,13 +133,13 @@ public:
 
         // Generate tones programmatically for each array value
         // Frequency range: 200Hz (low) to 2000Hz (high)
-        std::cout << "Generating " << ARRAY_SIZE << " tones..." << std::flush;
+        std::cout << "Generating " << arraySize << " tones..." << std::flush;
         float minFreq = 200.0f;
         float maxFreq = 2000.0f;
 
-        for (int i = 0; i < ARRAY_SIZE; i++) {
+        for (int i = 0; i < arraySize; i++) {
             // Map array index to frequency
-            float freq = minFreq + ((float)i / ARRAY_SIZE) * (maxFreq - minFreq);
+            float freq = minFreq + ((float)i / arraySize) * (maxFreq - minFreq);
             Mix_Chunk* tone = generateTone(freq, 50);  // 50ms duration
             if (tone) {
                 tones.push_back(tone);
@@ -189,7 +194,7 @@ public:
             throw std::runtime_error("Failed to load font");
         }
 
-        barWidth = windowWidth / ARRAY_SIZE;
+        barWidth = windowWidth / arraySize;
     }
 
     ~Visualizer() {
@@ -261,11 +266,11 @@ public:
         renderText(ss.str(), 10, 60, textColor);
 
         ss.str("");
-        ss << "Array Size: " << ARRAY_SIZE;
+        ss << "Array Size: " << arraySize;
         renderText(ss.str(), 10, 85, textColor);
 
         ss.str("");
-        ss << "Delay: " << DELAY_MS << "ms";
+        ss << "Delay: " << delayMs << "ms";
         renderText(ss.str(), 10, 110, textColor);
 
         SDL_RenderPresent(renderer);
@@ -297,6 +302,11 @@ public:
             }
         }
         return false;
+    }
+
+    // Get the delay value (for use in sorting algorithms)
+    int getDelayMs() const {
+        return delayMs;
     }
 };
 

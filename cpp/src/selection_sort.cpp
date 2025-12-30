@@ -49,7 +49,7 @@ void selectionSort(std::vector<int>& array, Visualizer& viz) {
             }
 
             // Delay so we can see the visualization
-            std::this_thread::sleep_for(std::chrono::milliseconds(DELAY_MS));
+            std::this_thread::sleep_for(std::chrono::milliseconds(viz.getDelayMs()));
         }
 
         // Swap the found minimum element with the first element
@@ -66,7 +66,7 @@ void selectionSort(std::vector<int>& array, Visualizer& viz) {
 
         // Show the swap
         viz.draw(array, i, minIndex, sorted);
-        std::this_thread::sleep_for(std::chrono::milliseconds(DELAY_MS * 3));
+        std::this_thread::sleep_for(std::chrono::milliseconds(viz.getDelayMs() * 3));
     }
 
     // Mark last element as sorted
